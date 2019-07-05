@@ -41,105 +41,6 @@ trial {
 		code = "SET CODE";
 #		target_button = 1;
 	}trial_event;
-}trial1;
-
-trial {
-	trial_duration = stimuli_length;
-	trial_type = specific_response;
-	terminator_button = 1;
-	all_responses = false;
-
-	stimulus_event {
-		picture {
-			text {
-				caption = "+";
-			};
-			x = 0; y = 0;
-		};
-		time = 0;
-		duration = next_picture;
-		response_active = false;
-	}fixation;
-	
-	stimulus_event {
-		picture { description = "7"; } level7;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "7";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture { description = "6"; } level6;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "6";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture { description = "5"; } level5;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "5";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture { description = "4"; } level4;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "4";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture { description = "3"; } level3;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "3";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture { description = "2"; } level2;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "2";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture { description = "1"; } level1;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "1";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture { description = "0"; } level0;
-		delta_time = '$stimulus_interval';
-		duration = next_picture;
-		response_active = true;
-		code = "0";
-#		target_button = 1;
-	};
-
-	stimulus_event {
-		picture {} ;
-		delta_time = '$stimulus_interval';
-		duration = $stimulus_interval;
-		response_active = false;
-	};
-	
 }main_trial;
 
 survey {
@@ -166,6 +67,8 @@ picture {
 	};
 	x = 0; y = 0;
 }pic_timeup;
+
+
 
 begin_pcl;
 
@@ -200,7 +103,6 @@ create_logfile();
 # Setup complete
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-
 # ! setup logfile
 # Logfile Header	
 log.print("Fragmented Picture Naming Task\n");
@@ -222,6 +124,45 @@ log.print("Level\t");
 log.print("Rspns.\t");
 log.print("Crrct.\t" );
 log.print("\n");
+
+# Instructions to participants
+
+create_new_prompt( 1 );
+prompt_message.set_caption( "In this experiment, you will be presented with an image that\nthat slowly reveals itself\n\nAt first you will not be able to tell what the image is a picture of,\nbut it will become clearer as more of it is revealed.", true);
+prompt_pic.set_part_y( 1, 300 );
+mid_button_text.set_caption( "Press [" + response_manager.button_name( 1, false, true ) + "] to continue", true );
+
+bitmap example_bitmap;
+int response_count = response_manager.total_response_count();
+
+loop
+	int i = 7
+until
+	i == 10 #forever
+begin
+	example_bitmap = new bitmap( "butterfly" + string(i) + ".png" );
+	prompt_pic.add_part( example_bitmap, 0, -100 );
+	prompt_trial.set_duration( 1000 );
+	prompt_trial.present();
+	if response_manager.total_response_count() > response_count then
+		prompt_trial.set_duration( forever );
+		break
+	else
+	end;
+	prompt_pic.remove_part( prompt_pic.part_count() );
+	i = i - 1;
+	if i < 0 then i = 7 else end;
+end;
+
+create_new_prompt( 1 );
+prompt_message.set_caption( "As soon as you think you know what the image is\npress the SPACEBAR.\n\nYou can then type in your answer on the next screen.\n\n\nIf you take too long, the trial will end\nand you will be presented with the answer.", true);
+mid_button_text.set_caption( "Press [" + response_manager.button_name( 1, false, true ) + "] to continue", true );
+prompt_trial.present();
+
+create_new_prompt( 1 );
+prompt_message.set_caption( "It is important that you press the SPACEBAR as soon as you\nknow the answer.\n\nYou can take your time typing in your response.", true);
+mid_button_text.set_caption( "Press [" + response_manager.button_name( 1, false, true ) + "] to begin the experiment!", true );
+prompt_trial.present();
 
 array <string> stimulus_array [15][10] = { 
 {"Clock",	"Anchor",	"Eye",		"Desk",		"Pear",		"Frog",		"Arrow",		"Snake",		"Pelican",	"Headphones"},
@@ -276,6 +217,9 @@ begin
 	
 	# Second loop - present images from trial_array
 	
+	pic_fixation.present();
+	wait_interval( 1000 );
+	
 	loop
 		int object = 1
 	until
@@ -290,7 +234,8 @@ begin
 			trial_pic.clear();
 			trial_pic.add_part( trial_array[object][abs(fragment-9)], 0, 0 );
 			trial_event.set_event_code( string( abs(fragment-8) ));
-			trial1.present();
+
+			main_trial.present();
 			
 			stimulus_data last_stimulus = stimulus_manager.last_stimulus_data();
 
@@ -327,7 +272,7 @@ begin
 		end;
 
 		string is_correct;
-		if trial_response == stimulus_array[block][object] then
+		if trial_response.lower() == stimulus_array[block][object].lower() then
 			is_correct = "YES"
 		elseif trial_response == "NONE" then
 			is_correct = "TIMEUP"
