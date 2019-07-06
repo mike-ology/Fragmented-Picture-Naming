@@ -193,7 +193,10 @@ begin
 	# First loop - load images and store fragment images for block in trial_array
 	
 	loop
-		int object = 1
+		int object = 1;
+		double loaded_objects = 1;
+		double objects_to_load = stimulus_array[block].count() * trial_array[object].count();
+		double percent_loaded = loaded_objects/objects_to_load
 	until
 		object > stimulus_array[block].count()
 	begin
@@ -205,10 +208,43 @@ begin
 		until
 			fragment > 8
 		begin
+			term.print_line(percent_loaded);
 			trial_array[object][fragment] = (new bitmap( stimulus_array[block][object] + string( fragment-1 ) + ".bmp" ) );
 			trial_array[object][fragment].set_load_size( 0, 0, scale_factor );
 			trial_array[object][fragment].load();
+
+			# Loading graphic
+			picture loading_pic = new picture();
 			
+			line_graphic loading_frame = new line_graphic;
+			loading_frame.set_next_line_width(1.0);
+			loading_frame.set_line_color( 255, 255, 255, 255 );
+			loading_frame.set_next_fill_color( 255, 255, 255, 255 );
+
+			loading_frame.add_line( 0.0 * scale_factor, 10.0 * scale_factor, 200.0 * scale_factor, 10 * scale_factor ); 
+			loading_frame.line_to( 200.0 * scale_factor, -10.0 * scale_factor );
+			loading_frame.line_to( 0.0 * scale_factor, -10.0 * scale_factor );
+			loading_frame.close( true );
+			loading_frame.redraw();
+
+			line_graphic loading_box = new line_graphic;
+			loading_box.set_next_line_width(1.0);
+			loading_box.set_line_color( 0, 255, 0, 255 );
+			loading_box.set_next_fill_color( 0, 255, 0, 255 );
+
+			loading_box.add_line( 0.0 * scale_factor, 10.0 * scale_factor, 200.0 * scale_factor * percent_loaded, 10.0 * scale_factor ); 
+			loading_box.line_to( 200.0 * scale_factor * percent_loaded , -10.0 * scale_factor );
+			loading_box.line_to( 0.0 * scale_factor, -10.0 * scale_factor );
+			loading_box.close( true );
+			loading_box.redraw();
+			
+			loading_pic.add_part( loading_frame, -100, -5 );
+			loading_pic.add_part( loading_box, -100, -5 );
+			loading_pic.present();
+			
+			loaded_objects = loaded_objects + 1.0;
+			percent_loaded = loaded_objects/( objects_to_load );
+
 			fragment = fragment + 1;
 		end;
 			
@@ -216,7 +252,6 @@ begin
 	end;
 	
 	# Second loop - present images from trial_array
-	
 	
 	loop
 		int object = 1
@@ -315,16 +350,16 @@ begin
 	
 	# ! insert end of block message
 	
-	block = block + 1;
-	
-	if block > stimulus_array.count() then
+	if block < stimulus_array.count() then
 		create_new_prompt( 1 );
 		prompt_trial.set_duration( forever );
-		prompt_message.set_caption( "End of Block " + string(block-1) + "/" + string(stimulus_array.count()) + ".\n\nTake a short break and continue\nwhen ready", true );
+		prompt_message.set_caption( "End of Block " + string(block) + "/" + string(stimulus_array.count()) + ".\n\nTake a short break and continue\nwhen ready", true );
 		mid_button_text.set_caption( "Press " + response_manager.button_name( 1, false, true ) + " to begin next block", true );
 		prompt_trial.present();
 	else
 	end;
+
+	block = block + 1;
 	
 end;
 
