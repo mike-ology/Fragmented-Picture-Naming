@@ -217,14 +217,15 @@ begin
 	
 	# Second loop - present images from trial_array
 	
-	pic_fixation.present();
-	wait_interval( 1000 );
 	
 	loop
 		int object = 1
 	until
 		object > stimulus_array[block].count()
 	begin
+
+		pic_fixation.present();
+		wait_interval( 1000 );
 
 		loop
 			int fragment = 1
@@ -250,12 +251,6 @@ begin
 		end;
 			
 		stimulus_data last_stimulus = stimulus_manager.last_stimulus_data();
-		term.print_line("Active stim count:" + string(stimulus_manager.stimulus_count() ) );
-		term.print_line("Level pressed:" + last_stimulus.event_code() );
-		term.print_line("Button pressed:" + string(last_stimulus.button()) );
-		term.print_line("Reaction Time:" + string(last_stimulus.reaction_time()) );
-		term.print_line("Stimulus Type:" + last_stimulus.stimulus_type() );
-
 		string trial_response;
  
 		if last_stimulus.button() == 0 then
@@ -300,7 +295,6 @@ begin
 	
 	# Third loop - unload images from memory
 	
-	
 	loop
 		int object = 1
 	until
@@ -322,6 +316,16 @@ begin
 	# ! insert end of block message
 	
 	block = block + 1;
+	
+	if block > stimulus_array.count() then
+		create_new_prompt( 1 );
+		prompt_trial.set_duration( forever );
+		prompt_message.set_caption( "End of Block " + string(block-1) + "/" + string(stimulus_array.count()) + ".\n\nTake a short break and continue\nwhen ready", true );
+		mid_button_text.set_caption( "Press " + response_manager.button_name( 1, false, true ) + " to begin next block", true );
+		prompt_trial.present();
+	else
+	end;
+	
 end;
 
 #########################################################
@@ -345,10 +349,8 @@ create_new_prompt( 1 );
 
 if parameter_manager.configuration_name() == "Mobile / Touchscreen" then
 	mid_button_text.set_caption( "CLOSE PROGRAM", true );
-	prompt_trial.set_terminator_buttons( { 3, 4, 5 } );
 else
 	mid_button_text.set_caption( "CLOSE PROGRAM [" + response_manager.button_name( 1, false, true ) + "]", true );
-	prompt_trial.set_terminator_button( 1 );
 end;
 
 prompt_trial.present();
