@@ -1,8 +1,8 @@
 # Fragmented Picture Naming
 
-**This task was programmed in Presentation (Version 21.1) and requires Presenation software and a license to run this program**
+**This task was programmed in Presentation (Version 21.1) and requires Presenation software and a license to run.**
 
-##Overview
+## Overview
 
 A simple task where participants must attempt to name the object slowly revealed to them with as few pieces of information as possible. On each trial, an extremely fragmented picutre is initially presented where most of the information is missing. After a set interval, additional information is revealed, and the process repeats until the entire image is revealed. It is believed that the task taps into global processing ability, as the task requires participants to integrate meaningless indpendent pieces of information into a meaningful whole.
 
