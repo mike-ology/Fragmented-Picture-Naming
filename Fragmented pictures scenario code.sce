@@ -18,7 +18,6 @@ default_formatted_text = true;
 
 begin;
 
-$stimulus_interval = 500;
 $font_h = default_font_size;
 
 picture {
@@ -29,7 +28,7 @@ picture {
 }pic_fixation;
 
 trial {
-	trial_duration = $stimulus_interval;
+	trial_duration = 999; # set in PCL
 	trial_type = specific_response;
 	terminator_button = 1;
 	all_responses = false;
@@ -68,12 +67,12 @@ picture {
 	x = 0; y = 0;
 }pic_timeup;
 
-
-
 begin_pcl;
 
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # User Setup
+
+int exposure_duration = parameter_manager.get_int( "Fragment Exposure Duration", 500 );
 
 # User parameters for screen dimension
 # Enter desired screen dimensions. Screens not set to these dimensions may be scaled
@@ -113,7 +112,7 @@ log.print( date_time() );
 log.print("\n");
 log.print( "Scale factor: " + string( scale_factor ) );
 log.print("\n");
-log.print( "Exposure time: " + string( parameter_manager.get_int( "Trial Duration", 1000 ) ) );
+log.print( "Exposure time: " + string( exposure_duration ) );
 log.print("\n\n");
 
 # Logfile Table
@@ -123,12 +122,14 @@ log.print("Obj\t" );
 log.print("Level\t"); 
 log.print("Rspns.\t");
 log.print("Crrct.\t" );
+log.print("Fr.RT\t" );
+log.print("T.RT\t" );
 log.print("\n");
 
 # Instructions to participants
 
 create_new_prompt( 1 );
-prompt_message.set_caption( "In this experiment, you will be presented with an image that\nthat slowly reveals itself\n\nAt first you will not be able to tell what the image is a picture of,\nbut it will become clearer as more of it is revealed.", true);
+prompt_message.set_caption( "In this experiment, you will be presented with an image that\nthat slowly reveals itself\n\nAt first you will not be able to tell what the image is a picture of, but it will become clearer as more of it is revealed.", true);
 prompt_pic.set_part_y( 1, 300 );
 mid_button_text.set_caption( "Press [" + response_manager.button_name( 1, false, true ) + "] to continue", true );
 
@@ -142,7 +143,7 @@ until
 begin
 	example_bitmap = new bitmap( "butterfly" + string(i) + ".png" );
 	prompt_pic.add_part( example_bitmap, 0, -100 );
-	prompt_trial.set_duration( 1000 );
+	prompt_trial.set_duration( exposure_duration );
 	prompt_trial.present();
 	if response_manager.total_response_count() > response_count then
 		prompt_trial.set_duration( forever );
@@ -155,12 +156,16 @@ begin
 end;
 
 create_new_prompt( 1 );
-prompt_message.set_caption( "As soon as you think you know what the image is\npress the SPACEBAR.\n\nYou can then type in your answer on the next screen.\n\n\nIf you take too long, the trial will end\nand you will be presented with the answer.", true);
+if parameter_manager.get_bool( "Automatically End Trials", true ) == true then
+	prompt_message.set_caption( "As soon as you think you know what the image is, press the SPACEBAR.\n\nYou can then type in your answer on the next screen.\n\n\nIf you take too long, the trial will end and you will be presented with the answer.", true);
+else #false
+	prompt_message.set_caption( "As soon as you think you know what the image is, press the SPACEBAR.\n\nYou can then type in your answer on the next screen.\n\n\nYou must make a guess on each trial to proceed through the experiment.", true);
+end;
 mid_button_text.set_caption( "Press [" + response_manager.button_name( 1, false, true ) + "] to continue", true );
 prompt_trial.present();
 
 create_new_prompt( 1 );
-prompt_message.set_caption( "It is important that you press the SPACEBAR as soon as you\nknow the answer.\n\nYou can take your time typing in your response.", true);
+prompt_message.set_caption( "It is important that you press the SPACEBAR as soon as you know the answer.\n\nYou can take your time typing in your response.", true);
 mid_button_text.set_caption( "Press [" + response_manager.button_name( 1, false, true ) + "] to begin the experiment!", true );
 prompt_trial.present();
 
@@ -187,7 +192,8 @@ array <bitmap> trial_array [10][8];
 loop
 	int block = 1
 until
-	block > stimulus_array.count()
+	# experiment will run the number of blocks specified in the parameter window, or all blocks listed in the array above
+	block > stimulus_array.count() || block > parameter_manager.get_int( "Max Blocks", stimulus_array.count() )
 begin
 
 	# First loop - load images and store fragment images for block in trial_array
@@ -208,7 +214,6 @@ begin
 		until
 			fragment > 8
 		begin
-			term.print_line(percent_loaded);
 			trial_array[object][fragment] = (new bitmap( stimulus_array[block][object] + string( fragment-1 ) + ".bmp" ) );
 			trial_array[object][fragment].set_load_size( 0, 0, scale_factor );
 			trial_array[object][fragment].load();
@@ -238,6 +243,10 @@ begin
 			loading_box.close( true );
 			loading_box.redraw();
 			
+			text loading_text = new text();
+			loading_text.set_caption("Loading", true);
+			
+			loading_pic.add_part( loading_text, 0, 40 );
 			loading_pic.add_part( loading_frame, -100, -5 );
 			loading_pic.add_part( loading_box, -100, -5 );
 			loading_pic.present();
@@ -250,6 +259,12 @@ begin
 			
 		object = object + 1;
 	end;
+
+
+	create_new_prompt( 1 );
+	prompt_message.set_caption(" ", true );
+	mid_button_text.set_caption( "Press SPACEBAR to begin the next block", true );
+	prompt_trial.present();
 	
 	# Second loop - present images from trial_array
 	
@@ -267,6 +282,14 @@ begin
 		until
 			fragment > trial_array[object].count()
 		begin
+			if fragment < trial_array[object].count() then
+				# image no longer fragmented - keep on screen
+				main_trial.set_duration( exposure_duration );
+			else
+				# any other fragment level
+				main_trial.set_duration( forever );
+			end;
+			
 			trial_pic.clear();
 			trial_pic.add_part( trial_array[object][abs(fragment-9)], 0, 0 );
 			trial_event.set_event_code( string( abs(fragment-8) ));
@@ -287,14 +310,20 @@ begin
 			
 		stimulus_data last_stimulus = stimulus_manager.last_stimulus_data();
 		string trial_response;
+		double response_time_raw;
+		double response_time_all;
  
 		if last_stimulus.button() == 0 then
 			# no response made
 			trial_response = "NONE";
+			response_time_raw = 0;
+			response_time_all = 0;
 			pic_timeup.present();
 			wait_interval( 1000 );
 		else
 			# present survey
+			response_time_raw = last_stimulus.reaction_time();
+			response_time_all = last_stimulus.reaction_time() + ( exposure_duration * abs(int( last_stimulus.event_code() )-7) );
 			surv.run();
 			survey_data last_survey = survey_data( stimulus_manager.last_stimulus_data() );
 			trial_response = last_survey.text_box_response();
@@ -309,13 +338,20 @@ begin
 		else
 			is_correct = "CHECK"
 		end;
+		
+		if trial_response == "\n" then
+			# empty field parses as new line for some reason, so this keeps logfiles neat
+			trial_response = "EMPTY";
+		else end;
 
 		log.print(block); log.print("\t");
 		log.print(object);  log.print("\t");
 		log.print(stimulus_array[block][object]);  log.print("\t");
 		log.print(last_stimulus.event_code());  log.print("\t");
 		log.print(trial_response); log.print("\t");
-		log.print(is_correct); log.print("\n");
+		log.print(is_correct); log.print("\t");
+		log.print(response_time_raw); log.print("\t");
+		log.print(response_time_all); log.print("\n");
 		
 		create_new_prompt(1);
 		prompt_message.set_caption( "The correct answer was: " + stimulus_array[block][object], true);
@@ -382,10 +418,6 @@ end;
 #########################################################
 create_new_prompt( 1 );
 
-if parameter_manager.configuration_name() == "Mobile / Touchscreen" then
-	mid_button_text.set_caption( "CLOSE PROGRAM", true );
-else
-	mid_button_text.set_caption( "CLOSE PROGRAM [" + response_manager.button_name( 1, false, true ) + "]", true );
-end;
+mid_button_text.set_caption( "CLOSE PROGRAM [" + response_manager.button_name( 1, false, true ) + "]", true );
 
 prompt_trial.present();

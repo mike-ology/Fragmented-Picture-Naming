@@ -1,4 +1,4 @@
-<ver>21</ver>
+<ver>21.1</ver>
 <efn>D:\Personal\OneDrive\University\A. Current Projects\3310 (2019)\Fragmented Picture 2019\Fragmented-Picture-Naming\Fragmented Picture Naming Experiment.exp</efn>
 <author>MCWE</author>
 <con>
@@ -30,11 +30,11 @@
 <depchg>1</depchg>
 <discard_windows_messages>0</discard_windows_messages>
 <display_status_window>1</display_status_window>
-<dmd>0</dmd>
-<dmh>0</dmh>
-<dmr>1</dmr>
-<dmrf>1</dmrf>
-<dmw>0</dmw>
+<dmd>32</dmd>
+<dmh>1080</dmh>
+<dmr>60</dmr>
+<dmrf>60</dmrf>
+<dmw>1920</dmw>
 <docs>
 <args></args>
 <exfl></exfl>
@@ -51,7 +51,7 @@
 <filename>D:\Personal\OneDrive\University\A. Current Projects\3310 (2019)\Fragmented Picture 2019\Fragmented-Picture-Naming\sub_logfile_saving.pcl</filename>
 </efs>
 <exclusive_mouse>1</exclusive_mouse>
-<exp_version>0.0.1</exp_version>
+<exp_version>1.0.0</exp_version>
 <exparam>
 <man>
 <cfg>
@@ -65,7 +65,32 @@
 <ss>0</ss>
 </r>
 <ss>
-<sd></sd>
+<sd>
+<val>
+<dat>
+<val>1</val>
+</dat>
+<id>0</id>
+</val>
+<val>
+<dat>
+<val>500</val>
+</dat>
+<id>1</id>
+</val>
+<val>
+<dat>
+<val>15</val>
+</dat>
+<id>2</id>
+</val>
+<val>
+<dat>
+<val>YES</val>
+</dat>
+<id>3</id>
+</val>
+</sd>
 <sid>-1</sid>
 </ss>
 </dcfg>
@@ -75,12 +100,75 @@
 <grps>
 <grp>
 <gn></gn>
-<pl></pl>
+<pl>
+<pid>0</pid>
+<pid>1</pid>
+<pid>2</pid>
+<pid>3</pid>
+</pl>
 </grp>
 </grps>
 </dl>
 <parms>
-<parms></parms>
+<parms>
+<parm>
+<id>0</id>
+<set>
+<desc>Should the final fragment level (i.e. the full unfragmented image) remain on-screen until a response is made, or disappear after the pre-determined exposure duration of each fragment?</desc>
+<edit>1</edit>
+<name>Automatically End Trials</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>bool</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>1</id>
+<set>
+<desc>How long should each fragment level be displayed before moving to the next fragment?</desc>
+<edit>1</edit>
+<name>Fragment Exposure Duration</name>
+<set>
+<rest></rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>2</id>
+<set>
+<desc>How many blocks of trials should be displayed before ending the experiment? Each block contains 10 trials, and there are 15 possible blocks that appear in a fixed order</desc>
+<edit>1</edit>
+<name>Max Blocks</name>
+<set>
+<rest>[1,15]</rest>
+</set>
+<temp>0</temp>
+<type>int</type>
+<vis>1</vis>
+</set>
+</parm>
+<parm>
+<id>3</id>
+<set>
+<desc>Should files be temporarily be saved to a location on the C:/ before being moved to the experiment folder, or directly to the experiment folder?
+Useful if running from a network location with unreliably connectivity.</desc>
+<edit>1</edit>
+<name>Use Local Save</name>
+<set>
+<rest>YES,NO</rest>
+</set>
+<temp>0</temp>
+<type>string</type>
+<vis>1</vis>
+</set>
+</parm>
+</parms>
 <ssl></ssl>
 </parms>
 <pass></pass>
@@ -605,6 +693,9 @@
 <abort_on_max_drops>0</abort_on_max_drops>
 <bps></bps>
 <chan></chan>
+<closest_match>0</closest_match>
+<closest_match_max></closest_match_max>
+<closest_match_min>1, 16, 8000</closest_match_min>
 <do_rec_vol>0</do_rec_vol>
 <freq></freq>
 <ignore_drops>1</ignore_drops>
@@ -677,4 +768,4 @@
 <unc></unc>
 <upb>0</upb>
 <urp>0</urp>
-<wob>1</wob>
+<wob>0</wob>
